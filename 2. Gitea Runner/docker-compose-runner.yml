@@ -1,0 +1,16 @@
+services:
+  runner:
+    image: gitea/act_runner:nightly
+    environment:
+      GITEA_INSTANCE_URL: "http://192.168.1.40:3000"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "ВАШ_ТОКЕН"
+      GITEA_RUNNER_NAME: "Gitea Runner"
+    volumes:
+      - ./runner:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitea
+
+networks:
+  gitea:
+    driver: bridge

@@ -1,0 +1,24 @@
+name: Package Unreal Engine Project 
+
+on:
+  push:
+    branches:
+      - master # Ветка, при изменение которой будет запускаться компиляция проекта.
+  workflow_dispatch:  # Добавляет возможность ручного запуска
+
+jobs:
+  build:
+    runs-on: self-hosted
+    name: Package Unreal Engine Game
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Package Project
+        env: 
+          UE_PATH: 'F:\Epic Games\UE_5.4' # Путь к вашей установке Unreal Engine
+          PROJECT_PATH: 'C:\Users\stas7\Documents\GitHub\Test_Games_ci-cd\Games_CI_CD\Games_CI_CD.uproject' # Путь к файлу вашего проекта Unreal
+          OUTPUT_PATH: 'C:\Users\stas7\Documents\GitHub\Test_Games_ci-cd\BUILD' # Путь к месту хранения упакованной игры
+        run: |
+          # Try to run empty UAT to check for correct path
+          & $env:UE_PATH\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -project="$env:PROJECT_PATH" -noP4 -platform=Win64 -clientconfig=Development -serverconfig=Development -cook -allmaps -build -stage -pak -archive -archivedirectory="$env:OUTPUT_PATH"
