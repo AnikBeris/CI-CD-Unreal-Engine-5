@@ -1,0 +1,56 @@
+# 📌 Данный код нужно вставить в файл с именем `1_automatic_build_UE.yml`  
+# в папку `.github/workflows` вашего проекта.
+# 
+# 🔹 Он будет выполнять ручную сборку проекта Unreal Engine по запросу.
+# 🔹 Может быть запущен вручную из Gitea.
+# 🔹 Собирает и упаковывает проект Unreal Engine 4 или 5.
+# 🔹 После успешного билда файлы могут быть загружены в ветку `Build` (при необходимости).
+#
+name: Manual Assembly of Unreal Engine Project # Название задачи в CI/CD (можете изменить)
+
+on:
+  workflow_dispatch:  # Добавляет возможность ручного запуска в Gitea
+
+jobs:
+  build:
+    runs-on: self-hosted  # Запуск на вашей машине (self-hosted runner)
+    name: Package Unreal Engine Game # Отображаемое имя задачи в Gitea
+    steps:
+      - name: 📥 Клонирование репозитория
+        uses: actions/checkout@v3  # Загружает код из репозитория
+
+      - name: 📦 Компиляция и упаковка проекта
+        env: 
+          UE_PATH: 'F:\Epic Games\UE_5.4' # Укажите путь к вашей установке Unreal Engine
+          PROJECT_PATH: 'C:\Documents\GitHub\Test_Games_ci-cd\Games_CI_CD\Games_CI_CD.uproject' # Путь к вашему проекту Unreal Engine
+          OUTPUT_PATH: 'C:\Documents\GitHub\Test_Games_ci-cd\BUILD' # Папка, куда будет сохранён билд
+        run: |
+          # Запускаем процесс сборки с помощью Unreal Automation Tool (UAT)
+          & $env:UE_PATH\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -project="$env:PROJECT_PATH" -noP4 -platform=Win64 -clientconfig=Development -serverconfig=Development -cook -allmaps -build -stage -pak -archive -archivedirectory="$env:OUTPUT_PATH" 
+          
+          # 🔹 BuildCookRun - выполняет сборку, компиляцию, запекание и упаковку игры
+          # 🔹 -project="$env:PROJECT_PATH" - путь к файлу проекта `.uproject`
+          # 🔹 -noP4 - отключение интеграции с Perforce
+          # 🔹 -platform=Win64 - сборка под Windows 64-bit
+          # 🔹 -clientconfig=Development - режим Development для клиента
+          # 🔹 -serverconfig=Development - режим Development для сервера (если используется)
+          # 🔹 -cook - приготовление (cooking) всех карт и контента
+          # 🔹 -allmaps - готовит (cooks) все карты проекта
+          # 🔹 -build - компилирует C++ код
+          # 🔹 -stage - копирует файлы игры в staging-директорию
+          # 🔹 -pak - упаковывает игру в `.pak` файлы
+          # 🔹 -archive - сохраняет билд в архив
+          # 🔹 -archivedirectory="$env:OUTPUT_PATH" - папка, куда будет сохранён билд
+
+      - name: 🚀 Загрузка билда в ветку Build
+        run: |
+          git config --global user.name "Gitea CI"
+          git config --global user.email "ci@gitea.local"
+          
+          # Переход на ветку 'Build' (создаёт, если её нет)
+          git checkout -b Build || git checkout Build
+
+          # Добавление билда в репозиторий
+          git add "$env:OUTPUT_PATH"
+          git commit -m "🔨 Добавлен новый билд Unreal Engine"
+          git push origin Build --force  # Загрузка в репозиторий
