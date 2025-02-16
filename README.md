@@ -173,6 +173,35 @@ docker-compose up -d
 
 Gitea Runner нужен для выполнения CI/CD задач на вашей локальной машине.
 
+### 🔹 Способ 1: Использование Docker
+
+Создаём `docker-compose-runner.yml` в той же папке `~/gitea`:
+
+```yaml
+services:
+  runner:
+    image: gitea/act_runner:nightly
+    environment:
+      GITEA_INSTANCE_URL: "http://192.168.1.40:3000"
+      GITEA_RUNNER_REGISTRATION_TOKEN: "ВАШ_ТОКЕН"
+      GITEA_RUNNER_NAME: "Gitea Runner"
+    volumes:
+      - ./runner:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitea
+
+networks:
+  gitea:
+    driver: bridge
+```
+
+Запускаем:
+
+```bash
+docker-compose up -d
+```
+
 
 ---
 
@@ -180,13 +209,9 @@ Gitea Runner нужен для выполнения CI/CD задач на ваш
 
 ### 1. **С указанием точного пути**
 
-```bash
-mkdir C:\gitea_runner && cd C:\gitea_runner
+```bash 
+mkdir C:\_gitea_runner && cd C:\_gitea_runner
 ```
-
-- `mkdir` <- команда создаёт папку `gitea_runner`
-- `cd` <- команда переходит в папку `gitea_runner`
-
 
 ### 2. Скачивание последней версии `act_runner` и меняем название на `gitea-act-runner.exe`
 ```
